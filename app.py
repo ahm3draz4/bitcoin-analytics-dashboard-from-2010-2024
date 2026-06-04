@@ -311,7 +311,7 @@ div[data-testid="stDataFrame"] { border: 1px solid #F7931A22 !important; border-
 @st.cache_data
 def get_data():
     base_dir = Path(__file__).resolve().parent
-    data_path = base_dir / "Bitcoin_History.csv"
+    data_path = base_dir / "data" / "Bitcoin_History.csv"
     return load_data(data_path)
 
 
