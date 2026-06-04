@@ -27,9 +27,11 @@ TEXT = "#8AA0BA"  # body text
 
 # ── Sizing ────────────────────────────────────────────────────────────────────
 # Make all graphs bigger by using larger figsize values.
-FIG_WIDE = (22, 9)
-FIG_TALL = (18, 11)
-FIG_SQUARE = (12, 12)
+# ── Sizing ────────────────────────────────────────────────────────────────────
+# Increase these numbers to make your graphs significantly bigger!
+FIG_WIDE = (28, 13)    # Affects Line, Bar, Histogram, Scatter, Box, Area, Count, Violin
+FIG_TALL = (22, 16)    # Affects Heatmap
+FIG_SQUARE = (16, 16)  # Affects Pie Chart
 
 
 def _base_style():
