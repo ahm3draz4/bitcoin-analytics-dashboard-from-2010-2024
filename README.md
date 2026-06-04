@@ -1,30 +1,93 @@
-# bitcoin-analytics-dashboard-from-2010-2024
- across multi-variable market dimensions, an automated paragraph context generator, and a 10-chart interactive analytics canvas styled in a sophisticated Bitcoin-gold aesthetic.
-# ₿ Bitcoin Historical Analytics Engine
+# ₿ Bitcoin History Dashboard
 
-A premium, highly responsive business intelligence and data visualization workspace designed for analyzing historical Bitcoin market cycles. Built purely in Python using **Streamlit**, this dashboard operates on a completely reactive model—updating a 10-chart analytical canvas instantly with every filter change.
+A professional data visualization dashboard for the Bitcoin History dataset, built for the **Exploratory Data Analysis** course.
 
-## ✨ Key Features
+---
 
-* **Instant Reactive Execution:** Completely free of standard form submission delays. The dashboard live-evaluates data matrices the microsecond a widget is modified.
-* **Premium Financial Aesthetic:** Custom-engineered dark (`Obsidian Dark`) and light (`Alabaster Light`) themes featuring a signature Bitcoin-gold and deep charcoal accent profile.
-* **Dynamic Paragraph Context Pipeline:** An intelligent NLP-style introductory block that dynamically compiles your active filter parameters into a cohesive, scannable summary paragraph in real-time.
-* **10-Chart Analytics Canvas:** Deep-dive visualization matrix spanning asset velocity, liquidity streams, market trend distributions, return vector densities, and variable correlations.
-* **Interactive Data Ledger Explorer:** An anchored high-performance data previewer at the base of the pipeline, supporting formatted currencies, volume scaling, and direct ledger inspections for up to 500 records.
+## 📁 Project Structure
 
-## 🚀 Quick Start & Deployment
+```
+dashboard_project/
+├── data/
+│   └── Bitcoin_History.csv      ← Dataset (exact filename, do NOT rename)
+├── notebooks/
+│   └── analysis.ipynb           ← EDA notebook (optional exploration)
+├── app.py                       ← Main Streamlit dashboard
+├── charts.py                    ← All 10 chart functions
+├── filters.py                   ← Data loading, cleaning, filter logic
+├── requirements.txt             ← Python dependencies
+└── README.md                    ← This file
+```
 
-### Prerequisites
-Ensure you have Python 3.8+ installed on your system.
+---
 
-### 1. Local Setup
-Clone this repository and navigate into your project directory:
+## ⚙️ How to Install & Run
+
+**Step 1 — Install dependencies**
 ```bash
-git clone https://github.com/ahm3draz4/bitcoin-analytics-dashboard-from-2010-2024.git
-cd bitcoin-analytics-dashboard-from-2010-2024
-#Install the required dependencies:
-
 pip install -r requirements.txt
-#Launch the local development server:
+```
 
+**Step 2 — Run the dashboard**
+```bash
 streamlit run app.py
+```
+
+**Step 3 — Open in browser**  
+Streamlit will automatically open `http://localhost:8501`
+
+---
+
+## 📊 Charts Included
+
+| # | Chart Type   | What it Shows                          |
+|---|--------------|----------------------------------------|
+| 1 | Line Chart   | Bitcoin closing price over time        |
+| 2 | Bar Chart    | Average price per year                 |
+| 3 | Histogram    | Distribution of daily % change         |
+| 4 | Scatter Plot | Volume vs closing price                |
+| 5 | Pie Chart    | Bullish vs Bearish day ratio           |
+| 6 | Box Plot     | Price spread / outliers per year       |
+| 7 | Heatmap      | Correlation between all features       |
+| 8 | Area Chart   | Price vs all-time high trend           |
+| 9 | Count Plot   | Bullish/bearish counts per year        |
+|10 | Violin Plot  | Daily % change distribution per year  |
+
+---
+
+## 🎛️ Filters (all charts update simultaneously)
+
+- **Date Range** — Slider to pick start/end date
+- **Price Range** — Numerical slider for min/max price
+- **Year Selector** — Multi-select specific years
+- **Market Direction** — Filter for Bullish / Bearish days
+- **Keyword Search** — Type a year or month name to search
+- **Reset Button** — Clears all filters to default
+
+---
+
+## 💡 Key Insights
+
+1. **Exponential growth** — Bitcoin's price grew from ~$0.10 in 2010 to ~$47,000 in 2024.
+2. **High volatility** — Daily % changes follow a near-normal distribution centered around 0%, with heavy tails.
+3. **Volume and price** — Higher trading volumes correlate with higher price periods (2017, 2021).
+4. **Bullish bias** — Roughly 53–55% of all trading days are bullish (positive return).
+5. **2022 bear market** — Visible as a dramatic drop in the area and line charts.
+6. **Price–High correlation = 0.99+** — Closing price and daily high are nearly identical (expected).
+
+---
+
+## 🛠️ Tech Stack
+
+| Tool       | Purpose                        |
+|------------|--------------------------------|
+| Python 3.x | Core language                  |
+| Pandas     | Data loading, cleaning, filtering |
+| NumPy      | Numerical operations           |
+| Matplotlib | Core chart creation            |
+| Seaborn    | Heatmap & statistical styling  |
+| Streamlit  | Interactive frontend dashboard |
+
+---
+
+*Submission Date: 05-June-2026 | Course: Exploratory Data Analysis | Instructor: Ali Hassan Sherazi*
