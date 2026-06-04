@@ -1,11 +1,3 @@
-"""
-charts.py
----------
-One function per chart type.
-Each function receives a filtered DataFrame and returns a Matplotlib Figure.
-Color scheme: Futuristic Bitcoin — deep navy + gold on near-black backgrounds.
-"""
-
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -23,428 +15,304 @@ GOLD2 = "#FFD27A"  # lighter gold highlight
 RED = "#FF4466"  # bearish red
 GREEN = "#00E5A0"  # bullish green
 GREY = "#2A3A5A"  # grid / border grey
-TEXT = "#8AA0BA"  # body text
+TEXT = "#A4BCC6"  # Enhanced body text brightness
 
-# ── Sizing ────────────────────────────────────────────────────────────────────
-# Make all graphs bigger by using larger figsize values.
-# ── Sizing ────────────────────────────────────────────────────────────────────
-# Increase these numbers to make your graphs significantly bigger!
-FIG_WIDE = (28, 13)    # Affects Line, Bar, Histogram, Scatter, Box, Area, Count, Violin
-FIG_TALL = (22, 16)    # Affects Heatmap
-FIG_SQUARE = (16, 16)  # Affects Pie Chart
-
+# ── MAXIMIZED SIZING MATRIX FOR HIGH VISIBILITY ────────────────────────────────
+FIG_WIDE = (32, 14)    # Massive landscape sizing for single-row items
+FIG_TALL = (26, 18)    # Generous scale for complex items like Heatmaps
+FIG_SQUARE = (18, 18)  # Maximum breathability for Pie charts
 
 def _base_style():
-    """Apply the futuristic Bitcoin dark theme to all charts."""
-    plt.rcParams.update(
-        {
-            "figure.facecolor": BG,
-            "axes.facecolor": PANEL,
-            "axes.edgecolor": GREY,
-            "axes.labelcolor": TEXT,
-            "xtick.color": TEXT,
-            "ytick.color": TEXT,
-            "text.color": TEXT,
-            "grid.color": "#0D1828",
-            "grid.linestyle": "--",
-            "grid.linewidth": 0.5,
-            "font.family": "monospace",
-            "legend.facecolor": PANEL,
-            "legend.edgecolor": GREY,
-            "legend.fontsize": 9,
-        }
-    )
-
-
-def _fmt_price(ax, axis="y"):
-    """Format axis ticks as dollar amounts."""
-    fmt = mticker.FuncFormatter(lambda x, _: f"${x:,.0f}")
-    if axis == "y":
-        ax.yaxis.set_major_formatter(fmt)
-    else:
-        ax.xaxis.set_major_formatter(fmt)
-
-
-def _title(ax, text):
-    """Consistent chart title style."""
-    ax.set_title(
-        text,
-        color=GOLD,
-        fontsize=13,
-        fontweight="bold",
-        pad=12,
-        fontfamily="monospace",
-    )
-
-
-def _style_axes(ax):
-    """Add futuristic border glow effect to axes."""
-    for spine in ax.spines.values():
-        spine.set_edgecolor(GREY)
-        spine.set_linewidth(0.8)
-
+    """Apply an ultra-clear futuristic dark theme to all charts."""
+    plt.rcParams.update({
+        "figure.facecolor": BG,
+        "axes.facecolor": PANEL,
+        "axes.edgecolor": GREY,
+        "axes.linewidth": 2.5,          # Thicker chart borders
+        "axes.labelcolor": TEXT,
+        "axes.labelsize": 20,           # Massive axis title text
+        "axes.titlesize": 26,           # Massive chart header text
+        "axes.titleweight": "bold",
+        "xtick.color": TEXT,
+        "ytick.color": TEXT,
+        "xtick.labelsize": 16,          # Large easily-readable tick markers
+        "ytick.labelsize": 16,
+        "grid.color": "#1A263F",        # Visible clean grid lines
+        "grid.linewidth": 1.2,
+        "text.color": TEXT,
+        "font.family": "sans-serif",
+        "legend.fontsize": 16,          # Big legible legend descriptions
+        "legend.title_fontsize": 18,
+        "figure.titlesize": 32
+    })
 
 def _empty_chart(fig, ax, message):
-    """Render a placeholder chart when there is no valid data."""
-    _base_style()
-    ax.text(
-        0.5,
-        0.5,
-        message,
-        color=TEXT,
-        fontsize=12,
-        ha="center",
-        va="center",
-        wrap=True,
-    )
+    """Fallback display with giant text indicator block."""
+    ax.clear()
+    ax.text(0.5, 0.5, message, color=GOLD, fontsize=24, ha="center", va="center", weight="bold")
     ax.set_axis_off()
-    fig.tight_layout()
     return fig
 
-
-# ── 1. LINE CHART — Price Over Time ──────────────────────────────────────────
-def chart_line(df: pd.DataFrame) -> plt.Figure:
+# ── 1. LINE CHART: Price Trend ────────────────────────────────────────────────
+def chart_line(df: pd.DataFrame):
     _base_style()
-    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-    ax.plot(
-        df["Date"],
-        df["Price"],
-        color=GOLD2,
-        linewidth=3.0,
-        solid_capstyle="round",
-        zorder=4,
-    )
-    ax.fill_between(df["Date"], df["Price"], alpha=0.22, color=GOLD)
-
-    # Highlight ATH point
-    if not df.empty:
-        ath_idx = df["Price"].idxmax()
-        ax.scatter(
-            df.loc[ath_idx, "Date"],
-            df.loc[ath_idx, "Price"],
-            color=GOLD2,
-            edgecolor=BG,
-            linewidth=0.8,
-            s=90,
-            zorder=6,
-            label=f"ATH ${df['Price'].max():,.0f}",
-        )
-
-    _title(ax, "Bitcoin Closing Price Over Time")
-    ax.set_xlabel("Date", color=TEXT)
-    ax.set_ylabel("Price (USD)", color=TEXT)
-    _fmt_price(ax)
-    ax.legend(framealpha=0.3)
-    ax.grid(True, alpha=0.4)
-    _style_axes(ax)
-    fig.tight_layout()
-    return fig
-
-
-# ── 2. BAR CHART — Average Price by Year ─────────────────────────────────────
-def chart_bar(df: pd.DataFrame) -> plt.Figure:
-    _base_style()
-    yearly = df.groupby("Year")["Price"].mean().reset_index()
-    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-
-    # Color bars: brightest = highest year
-    norm = (yearly["Price"] - yearly["Price"].min()) / (
-        yearly["Price"].max() - yearly["Price"].min() + 1
-    )
-    colors = [plt.cm.YlOrBr(0.35 + 0.6 * n) for n in norm]
-
-    bars = ax.bar(
-        yearly["Year"].astype(str),
-        yearly["Price"],
-        color=colors,
-        edgecolor=BG,
-        linewidth=0.5,
-    )
-
-    for bar in bars:
-        h = bar.get_height()
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            h * 1.015,
-            f"${h/1000:.0f}K",
-            ha="center",
-            va="bottom",
-            fontsize=7,
-            color=TEXT,
-        )
-
-    _title(ax, "Average Closing Price by Year")
-    ax.set_xlabel("Year", color=TEXT)
-    ax.set_ylabel("Avg Price (USD)", color=TEXT)
-    _fmt_price(ax)
-    ax.grid(True, axis="y", alpha=0.4)
-    _style_axes(ax)
-    fig.tight_layout()
-    return fig
-
-
-# ── 3. HISTOGRAM — Distribution of Daily Returns ─────────────────────────────
-def chart_histogram(df: pd.DataFrame) -> plt.Figure:
-    _base_style()
-    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-    ax.hist(df["Change %"], bins=60, color=GOLD, edgecolor=BG, alpha=0.85)
-    ax.axvline(0, color=RED, linestyle="--", linewidth=1.3, label="Zero")
-    ax.axvline(
-        df["Change %"].mean(),
-        color=GREEN,
-        linestyle="--",
-        linewidth=1.3,
-        label=f"Mean: {df['Change %'].mean():.2f}%",
-    )
-    _title(ax, "Distribution of Daily % Change")
-    ax.set_xlabel("Daily Change (%)", color=TEXT)
-    ax.set_ylabel("Frequency", color=TEXT)
-    ax.legend(framealpha=0.3)
-    ax.grid(True, axis="y", alpha=0.4)
-    _style_axes(ax)
-    fig.tight_layout()
-    return fig
-
-
-# ── 4. SCATTER PLOT — Volume vs Price ────────────────────────────────────────
-def chart_scatter(df: pd.DataFrame) -> plt.Figure:
-    _base_style()
-    sample = df.dropna(subset=["Vol."]).copy()
-    colors = sample["Direction"].map({"Bullish": GREEN, "Bearish": RED})
+    if df.empty:
+        fig, ax = plt.subplots(figsize=FIG_WIDE)
+        return _empty_chart(fig, ax, "No data matching active filter pipeline.")
 
     fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-    ax.scatter(
-        sample["Vol."],
-        sample["Price"],
-        c=colors,
-        alpha=0.35,
-        s=10,
-    )
+    
+    # Plotting line with enhanced structural thickness
+    ax.plot(df["Date"], df["Price"], color=GOLD, linewidth=4.5, label="Closing Value (USD)", zorder=3)
+    
+    # Accentuate points if looking at small time horizons
+    if len(df) < 60:
+        ax.scatter(df["Date"], df["Price"], color=GOLD2, s=120, edgecolors=BG, linewidths=2, zorder=4)
 
-    _title(ax, "Volume vs Closing Price")
-    ax.set_xlabel("Volume (traded)", color=TEXT)
-    ax.set_ylabel("Price (USD)", color=TEXT)
-    _fmt_price(ax)
-
-    handles = [
-        Line2D(
-            [0],
-            [0],
-            marker="o",
-            color="w",
-            markerfacecolor=GREEN,
-            markersize=7,
-            label="Bullish",
-        ),
-        Line2D(
-            [0],
-            [0],
-            marker="o",
-            color="w",
-            markerfacecolor=RED,
-            markersize=7,
-            label="Bearish",
-        ),
-    ]
-    ax.legend(handles=handles, framealpha=0.3)
-    ax.grid(True, alpha=0.4)
-    _style_axes(ax)
-    fig.tight_layout()
+    ax.set_title("Bitcoin Price Evaluation Velocity Over Time", pad=25)
+    ax.set_xlabel("Timeline Horizon", labelpad=15)
+    ax.set_ylabel("Asset Valuation Price ($ USD)", labelpad=15)
+    ax.grid(True, linestyle="--", alpha=0.6)
+    
+    # Cleaner layout configuration for numbers
+    ax.yaxis.set_major_formatter(mticker.StrMethodFormatter("${x:,.0f}"))
+    ax.legend(loc="upper left", framealpha=0.9, facecolor=BG, edgecolor=GREY, borderpad=1.2)
+    plt.tight_layout()
     return fig
 
-
-# ── 5. PIE CHART — Bullish vs Bearish Days ───────────────────────────────────
-def chart_pie(df: pd.DataFrame) -> plt.Figure:
+# ── 2. AREA CHART: Growth Context ─────────────────────────────────────────────
+def chart_area(df: pd.DataFrame):
     _base_style()
-    counts = df["Direction"].value_counts()
+    if df.empty:
+        fig, ax = plt.subplots(figsize=FIG_WIDE)
+        return _empty_chart(fig, ax, "No data matching active filter pipeline.")
 
+    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
+    ax.fill_between(df["Date"], df["Price"], color=GOLD, alpha=0.25, zorder=2)
+    ax.plot(df["Date"], df["Price"], color=GOLD, linewidth=4.0, zorder=3)
+
+    ax.set_title("Bitcoin Cumulative Asset Valuation Trajectory Landscape", pad=25)
+    ax.set_xlabel("Timeline Horizon", labelpad=15)
+    ax.set_ylabel("Price Level ($ USD)", labelpad=15)
+    ax.grid(True, linestyle=":", alpha=0.5)
+    
+    ax.yaxis.set_major_formatter(mticker.StrMethodFormatter("${x:,.0f}"))
+    plt.tight_layout()
+    return fig
+
+# ── 3. HISTOGRAM: Return Density ──────────────────────────────────────────────
+def chart_histogram(df: pd.DataFrame):
+    _base_style()
+    if df.empty or "Change %" not in df.columns:
+        fig, ax = plt.subplots(figsize=FIG_WIDE)
+        return _empty_chart(fig, ax, "Data series component is absent.")
+
+    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
+    
+    # Draw clear distribution density curve bars
+    sns.histplot(
+        data=df, x="Change %", kde=True, ax=ax,
+        color=GOLD, edgecolor=BG, linewidth=2, alpha=0.65, zorder=3
+    )
+    
+    # Style customization on the underlying line elements
+    if ax.lines:
+        ax.lines[0].set_color(GOLD2)
+        ax.lines[0].set_linewidth(4.5)
+
+    ax.axvline(0, color=RED, linestyle="--", linewidth=3.0, alpha=0.8, label="Zero Returns Baseline")
+    ax.set_title("Daily Percentage Return Vector Density Profile", pad=25)
+    ax.set_xlabel("Daily Market Return Flux Percentage (%)", labelpad=15)
+    ax.set_ylabel("Historical Record Counts Frequency", labelpad=15)
+    ax.xaxis.set_major_formatter(mticker.StrMethodFormatter("{x:+.1f}%"))
+    ax.grid(True, linestyle="--", alpha=0.4)
+    ax.legend(loc="upper right", framealpha=0.9, facecolor=BG, edgecolor=GREY, borderpad=1.2)
+    
+    plt.tight_layout()
+    return fig
+
+# ── 4. SCATTER PLOT: Volumetric Intersections ─────────────────────────────────
+def chart_scatter(df: pd.DataFrame):
+    _base_style()
+    if df.empty:
+        fig, ax = plt.subplots(figsize=FIG_WIDE)
+        return _empty_chart(fig, ax, "No records captured.")
+
+    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
+    
+    # Isolate valid data matrices safely
+    valid = df.dropna(subset=["Vol.", "Price"])
+    if valid.empty:
+        return _empty_chart(fig, ax, "Volume metric indicators are unavailable.")
+
+    # High clarity scatter plot markers
+    scatter = ax.scatter(
+        valid["Vol."], valid["Price"],
+        c=valid["Change %"], cmap="plasma",
+        s=160, alpha=0.75, edgecolors="#111A2E", linewidths=1.2, zorder=3
+    )
+
+    cbar = fig.colorbar(scatter, ax=ax, pad=0.02)
+    cbar.set_label("Daily Price Shift Value (%)", color=TEXT, fontsize=16, labelpad=12)
+    cbar.ax.tick_params(labelsize=14, colors=TEXT)
+    
+    ax.set_title("Liquidity Mass (Volume Traded) vs Intra-Day Valuation Spread", pad=25)
+    ax.set_xlabel("Capital Trading Volume Volume (Traded Count Asset Unit Shares)", labelpad=15)
+    ax.set_ylabel("Asset Spot Settlement Target Price ($ USD)", labelpad=15)
+    
+    ax.xaxis.set_major_formatter(mticker.EngFormatter())
+    ax.yaxis.set_major_formatter(mticker.StrMethodFormatter("${x:,.0f}"))
+    ax.grid(True, linestyle=":", alpha=0.5)
+    
+    plt.tight_layout()
+    return fig
+
+# ── 5. PIE CHART: Structural Allocation ───────────────────────────────────────
+def chart_pie(df: pd.DataFrame):
+    _base_style()
     fig, ax = plt.subplots(figsize=FIG_SQUARE, facecolor=BG)
-    wedge_props = {"edgecolor": BG, "linewidth": 2.5}
+    if df.empty or "Direction" not in df.columns:
+        return _empty_chart(fig, ax, "No records to classify structural segmentation.")
 
-    ax.pie(
-        counts,
-        labels=counts.index,
-        autopct="%1.1f%%",
-        colors=[GREEN, RED][: len(counts)],
-        wedgeprops=wedge_props,
-        startangle=140,
-        textprops={"color": TEXT, "fontsize": 11, "fontfamily": "monospace"},
+    counts = df["Direction"].value_counts()
+    if counts.empty:
+        return _empty_chart(fig, ax, "No dynamic direction metrics classified.")
+
+    labels = [str(x) for x in counts.index]
+    colors = [GREEN if x == "Bullish" else RED for x in labels]
+
+    wedges, texts, autotexts = ax.pie(
+        counts, labels=labels, colors=colors,
+        autopct="%1.1f%%", startangle=140,
+        wedgeprops={"edgecolor": BG, "linewidth": 4, "antialiased": True},
+        textprops={"fontsize": 20, "weight": "bold"}
     )
 
-    _title(ax, "Bullish vs Bearish Days")
-    fig.tight_layout()
+    # Enhance inner labeling clarity metrics
+    for text in texts:
+        text.set_color(TEXT)
+    for autotext in autotexts:
+        autotext.set_color(BG)
+        autotext.set_fontsize(22)
+
+    ax.set_title("Market Cycle Direction Structure Allocation", pad=35, fontsize=28)
+    plt.tight_layout()
     return fig
 
-
-# ── 6. BOX PLOT — Price Distribution by Year ─────────────────────────────────
-def chart_box(df: pd.DataFrame) -> plt.Figure:
+# ── 6. BAR CHART: Yearly Comparisons ──────────────────────────────────────────
+def chart_bar(df: pd.DataFrame):
     _base_style()
-    year_counts = df["Year"].value_counts()
-    valid_years = sorted(year_counts[year_counts >= 10].index)
-
-    if not valid_years:
-        fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-        return _empty_chart(fig, ax, "No year has enough data to render a box plot.")
-
-    sub = df[df["Year"].isin(valid_years)]
-    groups = []
-    labels = []
-
-    for y in valid_years:
-        prices = sub[sub["Year"] == y]["Price"].dropna().values
-        if len(prices) > 0:
-            groups.append(prices)
-            labels.append(str(y))
-
-    if not groups:
-        fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-        return _empty_chart(
-            fig,
-            ax,
-            "No price data available for the selected years.",
-        )
-
     fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-    bp = ax.boxplot(
-        groups,
-        labels=labels,
-        patch_artist=True,
-        medianprops={"color": GOLD2, "linewidth": 2},
+    if df.empty:
+        return _empty_chart(fig, ax, "No data available.")
+
+    yearly_avg = df.groupby("Year")["Price"].mean().reset_index()
+    
+    bars = ax.bar(
+        yearly_avg["Year"], yearly_avg["Price"],
+        color=GOLD, edgecolor=GOLD2, linewidth=1.5, width=0.65, zorder=3
     )
 
-    for patch in bp["boxes"]:
-        patch.set_facecolor("#0D1828")
-        patch.set_edgecolor(GOLD)
-    for whisker in bp["whiskers"]:
-        whisker.set_color(GREY)
-    for cap in bp["caps"]:
-        cap.set_color(GREY)
-    for flier in bp["fliers"]:
-        flier.set(marker=".", color=GOLD, alpha=0.3, markersize=3)
-
-    _title(ax, "Price Distribution by Year (Box Plot)")
-    ax.set_xlabel("Year", color=TEXT)
-    ax.set_ylabel("Price (USD)", color=TEXT)
-    _fmt_price(ax)
-    ax.grid(True, axis="y", alpha=0.4)
-    _style_axes(ax)
-    fig.tight_layout()
+    ax.set_title("Mean Valuation Level Tiers Sorted by Annual Calendar Blocks", pad=25)
+    ax.set_xlabel("Calendar Year Era Block", labelpad=15)
+    ax.set_ylabel("Average Historical Valuation Base ($ USD)", labelpad=15)
+    
+    ax.set_xticks(yearly_avg["Year"])
+    ax.set_xticklabels(yearly_avg["Year"], rotation=45)
+    ax.yaxis.set_major_formatter(mticker.StrMethodFormatter("${x:,.0f}"))
+    ax.grid(True, axis="y", linestyle="--", alpha=0.5)
+    
+    plt.tight_layout()
     return fig
 
-
-# ── 7. HEATMAP — Correlation Matrix ──────────────────────────────────────────
-def chart_heatmap(df: pd.DataFrame) -> plt.Figure:
+# ── 7. COUNT PLOT: Cycle Quantities ───────────────────────────────────────────
+def chart_count(df: pd.DataFrame):
     _base_style()
-    cols = ["Price", "Open", "High", "Low", "Vol.", "Change %", "DayRange"]
-    corr = df[cols].dropna().corr()
+    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
+    if df.empty or "Year" not in df.columns or "Direction" not in df.columns:
+        return _empty_chart(fig, ax, "Incomplete parameters for rendering.")
 
+    order = sorted(df["Year"].unique())
+    sns.countplot(
+        data=df, x="Year", hue="Direction",
+        palette={"Bullish": GREEN, "Bearish": RED},
+        order=order, ax=ax, edgecolor=BG, linewidth=1.5, zorder=3
+    )
+
+    ax.set_title("Calendar Cycle Density Count Quantities (Bullish vs Bearish)", pad=25)
+    ax.set_xlabel("Calendar Year Era Block", labelpad=15)
+    ax.set_ylabel("Quantified Market Days Count Summary", labelpad=15)
+    ax.set_xticklabels(order, rotation=45)
+    ax.grid(True, axis="y", linestyle=":", alpha=0.5)
+    ax.legend(title="Market Context Profile", loc="upper left", framealpha=0.9, facecolor=BG, edgecolor=GREY, borderpad=1.2)
+    
+    plt.tight_layout()
+    return fig
+
+# ── 8. BOX PLOT: Dispersion Spread ────────────────────────────────────────────
+def chart_box(df: pd.DataFrame):
+    _base_style()
+    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
+    if df.empty:
+        return _empty_chart(fig, ax, "No records ready.")
+
+    order = sorted(df["Year"].unique())
+    
+    # Thick-lined high-contrast box configurations
+    sns.boxplot(
+        data=df, x="Year", y="Price", order=order, ax=ax,
+        color=PANEL, linecolor=GOLD, linewidth=2.5,
+        flierprops={"markerfacecolor": RED, "markeredgecolor": "none", "markersize": 7},
+        boxprops={"facecolor": "#0B1A30", "edgecolor": GOLD}
+    )
+
+    ax.set_title("Price Variance Threshold Dispersions Across Historical Benchmarks", pad=25)
+    ax.set_xlabel("Calendar Year Era Block", labelpad=15)
+    ax.set_ylabel("Asset Price Metrics Bracket ($ USD)", labelpad=15)
+    ax.set_xticklabels(order, rotation=45)
+    ax.yaxis.set_major_formatter(mticker.StrMethodFormatter("${x:,.0f}"))
+    ax.grid(True, linestyle="--", alpha=0.4)
+    
+    plt.tight_layout()
+    return fig
+
+# ── 9. HEATMAP: Variable Matrix Interconnections ──────────────────────────────
+def chart_heatmap(df: pd.DataFrame):
+    _base_style()
     fig, ax = plt.subplots(figsize=FIG_TALL, facecolor=BG)
+    
+    numeric_cols = ["Price", "Open", "High", "Low", "Vol.", "Change %"]
+    valid_cols = [c for c in numeric_cols if c in df.columns]
+    
+    if len(valid_cols) < 2:
+        return _empty_chart(fig, ax, "Insufficient quantitative asset feature pairs.")
+
+    corr = df[valid_cols].corr()
+
+    # Highly clear matrix display with gigantic labels inside cells
     sns.heatmap(
-        corr,
-        ax=ax,
-        cmap="YlOrBr",
-        annot=True,
-        fmt=".2f",
-        linewidths=0.5,
-        linecolor=BG,
-        annot_kws={"size": 9, "color": TEXT},
-        cbar_kws={"shrink": 0.8},
+        corr, annot=True, fmt=".2f", cmap="mako", ax=ax,
+        vmin=-1, vmax=1, square=True, linewidths=3.0, linecolor=BG,
+        cbar_kws={"shrink": 0.8, "pad": 0.03},
+        annot_kws={"size": 22, "weight": "bold"}
     )
 
-    _title(ax, "Feature Correlation Heatmap")
-    ax.tick_params(axis="x", rotation=30)
-    fig.tight_layout()
+    ax.set_title("Market Performance Variable Cross-Correlation Coefficient Matrix", pad=30)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right", fontsize=18)
+    ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=18)
+    
+    plt.tight_layout()
     return fig
 
-
-# ── 8. AREA CHART — Cumulative Max Price ─────────────────────────────────────
-def chart_area(df: pd.DataFrame) -> plt.Figure:
-    _base_style()
-    df2 = df.copy()
-
-    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-    ax.fill_between(
-        df2["Date"],
-        df2["Price"],
-        alpha=0.35,
-        color=GOLD,
-        label="Closing Price",
-    )
-    ax.plot(
-        df2["Date"],
-        df2["Price"],
-        color=GOLD,
-        linewidth=2.8,
-        solid_capstyle="round",
-    )
-
-    _title(ax, "Price Over Time (Area Chart)")
-    ax.set_xlabel("Date", color=TEXT)
-    ax.set_ylabel("Price (USD)", color=TEXT)
-    _fmt_price(ax)
-    ax.legend(framealpha=0.3)
-    ax.grid(True, alpha=0.4)
-    _style_axes(ax)
-    fig.tight_layout()
-    return fig
-
-
-# ── 9. COUNT PLOT — Bullish / Bearish Count by Year ──────────────────────────
-def chart_count(df: pd.DataFrame) -> plt.Figure:
-    _base_style()
-    counts = (
-        df.groupby(["Year", "Direction"]).size().reset_index(name="Count")
-    )
-
-    fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-    years = sorted(counts["Year"].unique())
-    x = np.arange(len(years))
-    width = 0.35
-
-    for i, (direction, color) in enumerate(
-        [("Bullish", GREEN), ("Bearish", RED)]
-    ):
-        vals = [
-            counts[
-                (counts["Year"] == y)
-                & (counts["Direction"] == direction)
-            ]["Count"].sum()
-            for y in years
-        ]
-        ax.bar(
-            x + i * width,
-            vals,
-            width,
-            label=direction,
-            color=color,
-            edgecolor=BG,
-            alpha=0.85,
-        )
-
-    ax.set_xticks(x + width / 2)
-    ax.set_xticklabels([str(y) for y in years])
-
-    _title(ax, "Bullish vs Bearish Days per Year")
-    ax.set_xlabel("Year", color=TEXT)
-    ax.set_ylabel("Number of Days", color=TEXT)
-    ax.legend(framealpha=0.3)
-    ax.grid(True, axis="y", alpha=0.4)
-    _style_axes(ax)
-    fig.tight_layout()
-    return fig
-
-
-# ── 10. VIOLIN PLOT — Daily % Change by Year ─────────────────────────────────
-def chart_violin(df: pd.DataFrame) -> plt.Figure:
+# ── 10. VIOLIN PLOT: Return Profiles ──────────────────────────────────────────
+def chart_violin(df: pd.DataFrame):
     _base_style()
     year_counts = df["Year"].value_counts()
     valid_years = sorted(year_counts[year_counts >= 20].index)
 
     if not valid_years:
         fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-        return _empty_chart(
-            fig, ax, "No year has enough data to render a violin plot."
-        )
+        return _empty_chart(fig, ax, "Insufficient data clusters across year rows to plot structural distribution.")
 
     sub = df[df["Year"].isin(valid_years)]
     samples = []
@@ -456,33 +324,33 @@ def chart_violin(df: pd.DataFrame) -> plt.Figure:
             samples.append(vals)
             labels.append(str(y))
 
-    if not samples:
-        fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
-        return _empty_chart(
-            fig,
-            ax,
-            "No daily change data available for the selected years.",
-        )
-
     fig, ax = plt.subplots(figsize=FIG_WIDE, facecolor=BG)
+    if not samples:
+        return _empty_chart(fig, ax, "No metrics to draw.")
+
     parts = ax.violinplot(samples, positions=range(len(labels)), showmedians=True)
 
+    # Bright, thick, high-visibility styling for violin bodies
     for pc in parts["bodies"]:
         pc.set_facecolor(GOLD)
         pc.set_edgecolor(GOLD2)
-        pc.set_alpha(0.55)
+        pc.set_alpha(0.65)
+        pc.set_linewidth(2.0)
 
     parts["cmedians"].set_color(GREEN)
+    parts["cmedians"].set_linewidth(3.5)
+    if "cmins" in parts: parts["cmins"].set_edgecolor(GREY)
+    if "cmaxes" in parts: parts["cmaxes"].set_edgecolor(GREY)
 
+    ax.set_title("Annual Historical Percentage Returns Wavefront Profile Distribution", pad=25)
+    ax.set_xlabel("Calendar Year Era Block", labelpad=15)
+    ax.set_ylabel("Daily Return Vector Flux Percentage Level (%)", labelpad=15)
+    
     ax.set_xticks(range(len(labels)))
-    ax.set_xticklabels(labels)
-    ax.axhline(0, color=RED, linestyle="--", linewidth=0.8, alpha=0.7)
-
-    _title(ax, "Daily % Change Distribution by Year (Violin)")
-    ax.set_xlabel("Year", color=TEXT)
-    ax.set_ylabel("Daily Change (%)", color=TEXT)
-    ax.grid(True, axis="y", alpha=0.4)
-    _style_axes(ax)
-    fig.tight_layout()
+    ax.set_xticklabels(labels, rotation=45)
+    ax.axhline(0, color=RED, linestyle=":", linewidth=2.5, alpha=0.7)
+    ax.yaxis.set_major_formatter(mticker.StrMethodFormatter("{x:+.1f}%"))
+    ax.grid(True, linestyle="--", alpha=0.4)
+    
+    plt.tight_layout()
     return fig
-
