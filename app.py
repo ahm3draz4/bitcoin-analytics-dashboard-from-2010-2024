@@ -1,3 +1,10 @@
+"""
+app.py
+------
+Bitcoin History Dashboard — Futuristic Edition
+Run: streamlit run app.py
+"""
+
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -315,6 +322,7 @@ df_full = get_data()
 col_logo, col_title = st.columns([1, 9])
 
 with col_logo:
+    # Animated 3D flipping coin
     st.markdown("""
     <div class="btc-coin-wrapper">
       <div class="btc-coin">
@@ -334,6 +342,7 @@ st.markdown("---")
 # ── SIDEBAR FILTERS ───────────────────────────────────────────────────────────
 with st.sidebar:
 
+    # Sidebar header with coin
     st.markdown("""
     <div class="sidebar-header">
       <div class="btc-coin-wrapper">
@@ -395,8 +404,9 @@ with st.sidebar:
         format="$%.0f",
         label_visibility="collapsed",
     )
+    # Show selected range nicely
     st.markdown(
-        f"<div style='font-size:10px; color:#5A7A9A; text-align:center; margin-top:4px;'> "
+        f"<div style='font-size:10px; color:#5A7A9A; text-align:center; margin-top:4px;'>"
         f"${price_range[0]:,.0f} &nbsp;→&nbsp; ${price_range[1]:,.0f}"
         f"</div>",
         unsafe_allow_html=True
@@ -407,6 +417,7 @@ with st.sidebar:
     st.markdown("""<div class="filter-group">
     <div class="filter-label">📊 Market Direction</div>""", unsafe_allow_html=True)
 
+    # Use checkboxes for clearer UX
     col_bull, col_bear = st.columns(2)
     with col_bull:
         show_bullish = st.checkbox("🟢 Bullish", value=True)
@@ -433,6 +444,7 @@ with st.sidebar:
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # ── Active filter summary ──────────────────────────────────────────────────
     active_count = sum([
         start_date != min_date or end_date != max_date,
         len(selected_years) != len(all_years),
@@ -496,45 +508,40 @@ kpi(k5, "🟢", "BULLISH DAYS",
     f"of {len(df):,} total")
 
 
+# ── GUARD ─────────────────────────────────────────────────────────────────────
 if df.empty:
     st.warning("⚠️ No data matches your filters. Try adjusting the sidebar.")
     st.stop()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SECTION 1 — Price Trends (Full Screen / Single Rows)
+# SECTION 1 — Price Trends
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📈 Price Trends</div>', unsafe_allow_html=True)
 
-# Main core analytical chart gets a full row to maximize width
-st.markdown("**Line Chart — Closing Price Over Time**")
-st.pyplot(chart_line(df), use_container_width=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-st.markdown("**Area Chart — Price vs All-Time High**")
-st.pyplot(chart_area(df), use_container_width=True)
-
+col1, col2 = st.columns([3, 2])
+with col1:
+    st.markdown("**Line Chart — Closing Price Over Time**")
+    st.pyplot(chart_line(df), use_container_width=True)
+with col2:
+    st.markdown("**Area Chart — Price vs All-Time High**")
+    st.pyplot(chart_area(df), use_container_width=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SECTION 2 — Distribution & Returns (Wider Two-Column Grid Layout)
+# SECTION 2 — Distribution & Returns
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📉 Distribution & Returns</div>', unsafe_allow_html=True)
 
-col3, col4 = st.columns([1, 1])
+col3, col4, col5 = st.columns([2, 2, 1.5])
 with col3:
     st.markdown("**Histogram — Daily % Change**")
     st.pyplot(chart_histogram(df), use_container_width=True)
 with col4:
     st.markdown("**Scatter — Volume vs Price**")
     st.pyplot(chart_scatter(df), use_container_width=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# Separating the Pie chart so it isn't squeezed into oblivion
-st.markdown("**Pie — Bullish vs Bearish**")
-st.pyplot(chart_pie(df), use_container_width=True)
-
+with col5:
+    st.markdown("**Pie — Bullish vs Bearish**")
+    st.pyplot(chart_pie(df), use_container_width=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 3 — Yearly Analysis
@@ -549,26 +556,21 @@ with col7:
     st.markdown("**Count Plot — Bullish/Bearish per Year**")
     st.pyplot(chart_count(df), use_container_width=True)
 
-
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 4 — Statistical Depth
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">🔬 Statistical Depth</div>', unsafe_allow_html=True)
 
-# Spread these out across two rows instead of cramming three plots side by side
-col8, col9 = st.columns(2)
+col8, col9, col10 = st.columns([2, 2, 2])
 with col8:
     st.markdown("**Box Plot — Price by Year**")
     st.pyplot(chart_box(df), use_container_width=True)
 with col9:
     st.markdown("**Violin Plot — % Change by Year**")
     st.pyplot(chart_violin(df), use_container_width=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-st.markdown("**Heatmap — Feature Correlations**")
-st.pyplot(chart_heatmap(df), use_container_width=True)
-
+with col10:
+    st.markdown("**Heatmap — Feature Correlations**")
+    st.pyplot(chart_heatmap(df), use_container_width=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 5 — Raw Data Preview
