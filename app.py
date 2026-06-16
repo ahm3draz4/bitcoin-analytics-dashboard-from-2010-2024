@@ -1,10 +1,3 @@
-"""
-app.py
-------
-Bitcoin History Dashboard — Futuristic Edition
-Run: streamlit run app.py
-"""
-
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -373,6 +366,7 @@ with st.sidebar:
         min_value=min_date,
         max_value=max_date,
         label_visibility="collapsed",
+        key="date_range",
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -387,6 +381,7 @@ with st.sidebar:
         default=all_years,
         label_visibility="collapsed",
         placeholder="All years selected",
+        key="selected_years",
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -403,6 +398,7 @@ with st.sidebar:
         value=(price_min_val, price_max_val),
         format="$%.0f",
         label_visibility="collapsed",
+        key="price_range",
     )
     # Show selected range nicely
     st.markdown(
@@ -420,9 +416,9 @@ with st.sidebar:
     # Use checkboxes for clearer UX
     col_bull, col_bear = st.columns(2)
     with col_bull:
-        show_bullish = st.checkbox("🟢 Bullish", value=True)
+        show_bullish = st.checkbox("🟢 Bullish", value=True, key="show_bullish")
     with col_bear:
-        show_bearish = st.checkbox("🔴 Bearish", value=True)
+        show_bearish = st.checkbox("🔴 Bearish", value=True, key="show_bearish")
 
     selected_dirs = []
     if show_bullish:
@@ -441,6 +437,7 @@ with st.sidebar:
         value="",
         placeholder="e.g.  2021  or  Jan  or  2020-03",
         label_visibility="collapsed",
+        key="keyword",
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -462,6 +459,9 @@ with st.sidebar:
     st.markdown("---")
 
     if st.button("⟳  RESET ALL FILTERS"):
+        for key in ["date_range", "selected_years", "price_range", "show_bullish", "show_bearish", "keyword"]:
+            if key in st.session_state:
+                del st.session_state[key]
         st.rerun()
 
     st.markdown(
